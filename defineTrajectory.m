@@ -3,78 +3,77 @@
 eeName = 'Link_EE';
 
 pathToURDF.robot = './3DoFRobot.urdf';
-robot = importrobot(pathToURDF.robot);
 
-numJoints = numel(robot.homeConfiguration);
-robot.homeConfiguration.JointName
+% Robot 1
+robot1 = importrobot(pathToURDF.robot);
+numJoints = numel(robot1.homeConfiguration);
+robot1.homeConfiguration.JointName
+% Robot 2
+robot2 = importrobot(pathToURDF.robot);
+numJoints = numel(robot2.homeConfiguration);
+robot2.homeConfiguration.JointName
 
-% initial configuration is given
-q_0 = [0;0;0];
-initPosition = FwdKin(q_0);
+
+% change home configuration
+ikInitGuess = [0;-pi/1.999;4*pi/3];
+ikInitGuessSim = ikInitGuess;
+initPosition = FwdKin(ikInitGuess);
+
+homeConfig = struct('JointName', 'Joint_1');
+homeConfig(2).JointName = 'Joint_2';
+homeConfig(3).JointName = 'Joint_3';
+homeConfig(1).JointPosition = ikInitGuess(1);
+homeConfig(2).JointPosition = ikInitGuess(2);
+homeConfig(3).JointPosition = ikInitGuess(3);
+ikInitGuess = homeConfig;
 
 % maximum number of waypoints
 maxWaypoints = 20;
 
+%% Phase 1 Trajectories
+
+% Robot 1
 % Positions (X Y Z)
-a = 0.25;
-waypoints = initPosition + ...
-    [  0,   0,   0;
-       0,  -a,  -a;
-       0,   0,-2*a;
-       0,   a,  -a;
-       0,   0,   0]';
-
-numWaypoints = size(waypoints, 2);
-
-% Array of waypoint times
-waypointTimes = 0:4:16;
-
+P1_R1_waypoints = horzcat(initPosition,...
+    [  0.4000, 0, 0.8500;
+       0.7395, 0, 0.9786]');
+% Velocity (cubic and quintic)
+P1_R1_waypointVels = 0.1*[     1.5,  0,   1;
+                     3*0.5/2,  0, 1/2;
+                           0,  0,   0]';
+numWaypoints = size(P1_R1_waypoints, 2);
+% Array of waypoint times (offset to be added to simulation time)
+P1_R1_waypointTimes = 0:3:6;
 % Trajectory Sample Time
 % These will be all the calculated points for the robot to hit (even in
 % between waypoints)
 ts = 0.2;
-trajTimes = 0:ts:waypointTimes(end);
+trajTimes = 0:ts:P1_R1_waypointTimes(end);
 
-%% Additional Parameters
+% Robot 2
+% Just regulating home position with PD
 
-% Boundary conditions (for polynomial trajectories)
-% Velocity (cubic and quintic)
-waypointVels = 0.1*[ 0, -1,  0;
-                     0,  0, -1;
-                     0,  1,  0;
-                     0,  0,  1;
-                     0, -1,  0]';
 
-% Acceleration (quintic only)
-waypointAccels = zeros(size(waypointVels));
-
-% Acceleration times (trapezoidaly only)
-waypointAccelTimes = diff(waypointTimes)/4;
+%% Trajectory Generation
 
 disp('PUMA Task Space Trajectory Generation and Evaluation')
 tic
-trajType = 'quintic';
-switch trajType
-    case 'trap'
-        [posTask,velTask,accelTask] = trapveltraj(waypoints,numel(trajTimes), ...
-            'AccelTime',repmat(waypointAccelTimes,[3 1]), ... 
-            'EndTime',repmat(diff(waypointTimes),[3 1]));
-    case 'cubic'
-        [posTask,velTask,accelTask] = cubicpolytraj(waypoints,waypointTimes,trajTimes, ... 
-            'VelocityBoundaryCondition',waypointVels);
-        
-    case 'quintic'
-        [posTask,velTask,accelTask] = quinticpolytraj(waypoints,waypointTimes,trajTimes, ... 
-            'VelocityBoundaryCondition',waypointVels, ...
-            'AccelerationBoundaryCondition',waypointAccels);
-        
-    case 'bspline'
-        ctrlpoints = waypoints; % Can adapt this as needed
-        [posTask,velTask,accelTask] = bsplinepolytraj(ctrlpoints,waypointTimes([1 end]),trajTimes);
-        
-    otherwise
-        error('Invalid trajectory type! Use ''trap'', ''cubic'', ''quintic'', or ''bspline''');
-end
+[posTask,velTask,accelTask] = quinticpolytraj(P1_R1_waypoints,P1_R1_waypointTimes,trajTimes, ... 
+    'VelocityBoundaryCondition',P1_R1_waypointVels, ...
+    'AccelerationBoundaryCondition',waypointAccels);
+taskTime = toc;
+
+disp(['Task space trajectory generation time : ' num2str(taskTime) ' s']);
+figure; hold on
+plot3(posTask(1,:),posTask(2,:),posTask(3,:),'b-');
+plot3(P1_R1_waypoints(1,:),P1_R1_waypoints(2,:),P1_R1_waypoints(3,:),'ko','LineWidth',2);
+title('Trajectory Comparison'); 
+xlabel('X [m]');
+ylabel('Y [m]');
+zlabel('Z [m]');
+legend('Task Space Trajectory','Waypoints');
+grid on
+view([45 45]);
 
 
 % fwd kinematics

@@ -5,4 +5,4 @@ dt = 1.00e-03;    % time-steps for solver
 
 % initialize states
 q_0  = [0; 0; 0];  % initial conditions for states (radian)
-dq_0 = [0; 0; 0];  % initial conditions for state velocities  
+dq_0 = [0; 0; 0];  % initial conditions for state velocities

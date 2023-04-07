@@ -16,7 +16,7 @@ robot2.homeConfiguration.JointName
 
 % change home configuration
 ikInitGuess = [0;-pi/1.999;4*pi/3];
-ikInitGuessSim = ikInitGuess;
+ikInitGuessSim = ikInitGuess; % initial configuration of both R1 and R2
 initPosition = FwdKin(ikInitGuess);
 
 homeConfig = struct('JointName', 'Joint_1');
@@ -35,12 +35,12 @@ maxWaypoints = 20;
 % Robot 1
 % Positions (X Y Z)
 P1_R1_waypoints = horzcat(initPosition,...
-    [  0.4000, 0, 0.8500;
-       0.7395, 0, 0.9786]');
+    [0.4000, 0, 0.8500;
+     0.7395, 0, 0.9786]');
 % Velocity (cubic and quintic)
-P1_R1_waypointVels = 0.1*[     1.5,  0,   1;
-                     3*0.5/2,  0, 1/2;
-                           0,  0,   0]';
+P1_R1_waypointVels = 0.1*[    1.5,  0,   1;
+                          3*0.5/2,  0, 1/2;
+                                0,  0,   0]';
 numWaypoints = size(P1_R1_waypoints, 2);
 % Array of waypoint times (offset to be added to simulation time)
 P1_R1_waypointTimes = 0:3:6;
@@ -52,6 +52,28 @@ trajTimes = 0:ts:P1_R1_waypointTimes(end);
 
 % Robot 2
 % Just regulating home position with PD
+% ikInitGuessSim
+
+%% Phase 2
+% Robot 1
+P2_R1_pose = P1_R1_waypoints(end,:);
+
+% Robot 2 - Desired trajectory off assumed success of Phase 1
+% Relative to R2 base frame
+P2_R2_waypoints = horzcat(initPosition,...
+    [0.4000, 0, 0.8500;
+     0.7395, 0, 0.9786]');
+% Velocity (cubic and quintic)
+P2_R2_waypointVels = 0.1*[    1.5,  0,   1;
+                          3*0.5/2,  0, 1/2;
+                                0,  0,   0]';
+numWaypoints = size(P1_R1_waypoints, 2);
+% Array of waypoint times (offset to be added to simulation time)
+P2_R2_waypointTimes = 0:3:6;
+% Trajectory Sample Time
+% These will be all the calculated points for the robot to hit (even in
+% between waypoints)
+P2_R2_trajTimes = 0:ts:P2_R2_waypointTimes(end);
 
 
 %% Trajectory Generation

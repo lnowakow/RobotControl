@@ -56,7 +56,7 @@ trajTimes = 0:ts:P1_R1_waypointTimes(end);
 
 %% Phase 2
 % Robot 1
-P2_R1_pose = P1_R1_waypoints(end,:);
+P2_R1_pose = P1_R1_waypoints(:,end);
 
 % Robot 2 - Desired trajectory off assumed success of Phase 1
 % Relative to R2 base frame
@@ -78,6 +78,8 @@ P2_R2_trajTimes = 0:ts:P2_R2_waypointTimes(end);
 
 %% Trajectory Generation
 
+% Acceleration (quintic only)
+waypointAccels = zeros(size(P1_R1_waypointVels));
 disp('PUMA Task Space Trajectory Generation and Evaluation')
 tic
 [posTask,velTask,accelTask] = quinticpolytraj(P1_R1_waypoints,P1_R1_waypointTimes,trajTimes, ... 

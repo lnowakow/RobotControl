@@ -29,7 +29,7 @@
     <child link="Link_1"/>
     <origin rpy="0 0 0" xyz="0 0 0.6731"/>
     <axis xyz="0 0 1"/>
-    <limit effort="204" lower="-12.96705972839" upper="12.96705972839" velocity="100.91986217719"/>
+    <limit effort="204" lower="-100" upper="100" velocity="100.91986217719"/>
   </joint>
     <!-- Link 1 -->
   <link name="Link_1">
@@ -59,7 +59,7 @@
     <child link="Link_2"/>
     <origin rpy="-1.5708 0 0" xyz="0 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="204" lower="-2.96705972839" upper="2.96705972839" velocity="1.91986217719"/>
+    <limit effort="204" lower="-100" upper="100" velocity="100"/>
   </joint>
     <!-- Link 2 -->
   <link name="Link_2">
@@ -89,7 +89,7 @@
     <child link="Link_3"/>
     <origin rpy="0 0 0" xyz="0.432 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit effort="204" lower="-2.96705972839" upper="2.96705972839" velocity="1.91986217719"/>
+    <limit effort="204" lower="-100" upper="100" velocity="100"/>
   </joint>
     <!-- Link 3 -->
   <link name="Link_3">

@@ -15,7 +15,7 @@ robot2.homeConfiguration.JointName
 
 
 % change home configuration
-ikInitGuess = [0;-pi/1.999;4*pi/3];
+ikInitGuess = [0;-pi/1.999;-2*pi/3];
 ikInitGuessSim = ikInitGuess; % initial configuration of both R1 and R2
 initPosition = FwdKin(ikInitGuess);
 

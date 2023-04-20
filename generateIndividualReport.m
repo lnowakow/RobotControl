@@ -77,13 +77,13 @@ fig_subtitle = sprintf("Hm=%d, Dm=%d, Km=%d, Ks=500Nm", R2Hm, R2Dm, R2Km);
 interaction_time = out.tout(out.tout >= out.phase3time.Data(end));
 spring_l = out.spring_length.Data(end-size(interaction_time)+1:end);
 
-[settling_time, max_disp] = findSettlingTime(spring_l, interaction_time);
-TsLabel = sprintf("Ts=%.4f s", settling_time);
+[spring_settling_time, spring_max_disp] = findSettlingTime(spring_l, interaction_time);
+TsLabel = sprintf("Ts=%.4f s", spring_settling_time);
 
 f1 = figure("Name",fig_title);
 plot(interaction_time, spring_l, "LineWidth",2)
 hold on
-xline(interaction_time(1)+settling_time,'k--',TsLabel, ...
+xline(interaction_time(1)+spring_settling_time,'k--',TsLabel, ...
     "LabelVerticalAlignment","bottom", ...
     "LabelOrientation","horizontal", ...
     "LabelHorizontalAlignment","right")
@@ -105,13 +105,13 @@ interaction_time = out.tout(out.tout >= out.phase3time.Data(end));
 force = squeeze( ...
     out.R1interactionForce.Data(:,1,end-size(interaction_time)+1:end));
 
-[settling_time, max_disp] = findSettlingTime(spring_l, interaction_time);
-TsLabel = sprintf("Ts=%.4f s", settling_time);
+[force_settling_time, max_force] = findSettlingTime(spring_l, interaction_time);
+TsLabel = sprintf("Ts=%.4f s", force_settling_time);
 
 f1 = figure("Name",fig_title);
 plot(interaction_time, force, "LineWidth",2)
 hold on
-xline(interaction_time(1)+settling_time,'k--',TsLabel, ...
+xline(interaction_time(1)+force_settling_time,'k--',TsLabel, ...
     "LabelVerticalAlignment","bottom", ...
     "LabelOrientation","horizontal", ...
     "LabelHorizontalAlignment","right")
@@ -126,5 +126,35 @@ xtickformat('%.0f')
 hold off
 saveas(f1, image_dir+sim_folder+fig_title+'.jpg')
 
+%% Trajectory Error Phase 1
 
+phase1_idx = find(out.tout == out.phase2time.Data(end));
 
+R1P1_RMSE = rmse(out.R1poseDesired.Data(1:phase1_idx,:), ...
+    out.R1poseReal.Data(1:phase1_idx,:));
+R2P1_RMSE = rmse(out.R2poseDesired.Data(1:phase1_idx,:), ...
+    out.R2poseReal.Data(1:phase1_idx,:));
+
+%% Trajectory Error Phase 2
+
+phase2_start = find(out.tout == out.phase2time.Data(end));
+phase2_end = find(out.tout == out.phase3time.Data(end));
+
+R1P2_RMSE = rmse(out.R1poseDesired.Data(phase2_start:phase2_end,:), ...
+    out.R1poseReal.Data(phase2_start:phase2_end,:));
+R2P2_RMSE = rmse(out.R2poseDesired.Data(phase2_start:phase2_end,:), ...
+    out.R2poseReal.Data(phase2_start:phase2_end,:));
+
+%% Save Metrics
+metrics = {"_____", "X-rmse", "Y-rmse", "Z-rmse";
+        "R1P1", R1P1_RMSE(1), R1P1_RMSE(2), R1P1_RMSE(3);
+        "R2P1", R2P1_RMSE(1), R2P1_RMSE(2), R2P1_RMSE(3);
+        "R1P2", R1P2_RMSE(1), R1P2_RMSE(2), R1P2_RMSE(3);
+        "R2P2", R2P2_RMSE(1), R2P2_RMSE(2), R2P2_RMSE(3);
+        "", "Settling Time", "Max Value", "";
+        "spring length", spring_settling_time, spring_max_disp, "";
+        "interaction force", force_settling_time, max_force, ""};
+
+filename = convertStringsToChars(sim_folder);
+metrics = cell2table(metrics);
+writetable(metrics, "metric_reports/"+filename(1:end-1)+".csv");

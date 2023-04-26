@@ -7,9 +7,9 @@ R1Dm = out.R1DmConst.Data(1);
 R1Km = out.R1KmConst.Data(1);
 R1_handle = sprintf("R1_Hm%d-Dm%d-Km%d_", R1Hm,R1Dm,R1Km);
 
-R2Hm = out.R1HmConst.Data(1);
-R2Dm = out.R1DmConst.Data(1);
-R2Km = out.R1KmConst.Data(1);
+R2Hm = out.R2HmConst.Data(1);
+R2Dm = out.R2DmConst.Data(1);
+R2Km = out.R2KmConst.Data(1);
 R2_handle = sprintf("R2_Hm%d-Dm%d-Km%d_", R2Hm,R2Dm,R2Km);
 
 image_dir = "images/";
@@ -99,7 +99,7 @@ saveas(f1, image_dir+sim_folder+fig_title+'.jpg')
 
 %% R1 Interaction Forces
 fig_title = "Spring Force Exerted on Each Manipulator";
-fig_subtitle = sprintf("Hm=%d, Dm=%d, Km=%d, Ks=500Nm", R2Hm, R2Dm, R2Km);
+fig_subtitle = sprintf("R1: Hm=%d, Dm=%d, Km=%d | R1: Hm=%d, Dm=%d, Km=%d | Ks=500Nm", R1Hm, R1Dm, R1Km, R2Hm, R2Dm, R2Km);
 
 interaction_time = out.tout(out.tout >= out.phase3time.Data(end));
 force = squeeze( ...
@@ -153,7 +153,7 @@ metrics = {"_____", "X-rmse", "Y-rmse", "Z-rmse";
         "R2P2", R2P2_RMSE(1), R2P2_RMSE(2), R2P2_RMSE(3);
         "", "Settling Time", "Max Value", "";
         "spring length", spring_settling_time, spring_max_disp, "";
-        "interaction force", force_settling_time, max_force, ""};
+        "interaction force", force_settling_time, 500*max_force, ""};
 
 filename = convertStringsToChars(sim_folder);
 metrics = cell2table(metrics);
